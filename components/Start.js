@@ -10,7 +10,7 @@ const Start = ({ navigation }) => {
     <View style={styles.main}>
       <ImageBackground source={image} style={styles.image}>
         <View style= {styles.titlewrapper}>
-          <Text style={styles.title}>App Title</Text>
+          <Text style={styles.title}>Let's Hello!</Text>
         </View>
         <View style={styles.container}>
           <View style={styles.inputWrapper}>
