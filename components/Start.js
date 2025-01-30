@@ -1,44 +1,49 @@
 import { useState } from 'react';
-import { ImageBackground, Image, StyleSheet, View, Text, TouchableOpacity , TextInput } from 'react-native';
+import { ImageBackground, Image, StyleSheet, View, Text, TouchableOpacity , TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import image from '../assets/Background Image.png';
 
 const Start = ({ navigation }) => {
   const [name, setName] = useState('');
-  const [color, setColor] = useState('');
+  const [color, setColor] = useState('#090C08');
 
   return (
-    <View style={styles.main}>
-      <ImageBackground source={image} style={styles.image}>
-        <View style= {styles.titlewrapper}>
-          <Text style={styles.title}>Let's Hello!</Text>
-        </View>
-        <View style={styles.container}>
-          <View style={styles.inputWrapper}>
-          <Image
-            style={[styles.searchIcon, {resizeMode: 'stretch'}]}
-            source={require('../assets/icon.svg')}
-          />
-            <TextInput
-              style={styles.input}
-              placeholder="Your Name"
-              value={name}
-              onChangeText={(val) => setName(val)}
-              placeholderTextColor='#757083'
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : ''}
+    >
+      <View style={styles.main}>
+        <ImageBackground source={image} style={styles.image}>
+          <View style= {styles.titlewrapper}>
+            <Text style={styles.title}>Let's Hello!</Text>
+          </View>
+          <View style={styles.container}>
+            <View style={styles.inputWrapper}>
+            <Image
+              style={[styles.searchIcon, {resizeMode: 'stretch'}]}
+              source={require('../assets/icon.svg')}
             />
+              <TextInput
+                style={styles.input}
+                placeholder="Your Name"
+                value={name}
+                onChangeText={(val) => setName(val)}
+                placeholderTextColor='#757083'
+              />
+            </View>
+            <Text style={styles.label}>Choose Background Color:</Text>
+            <View style={styles.colorOptions}>
+              <TouchableOpacity  style={[styles.colorCircle, { backgroundColor: '#090C08' }, color === '#090C08' && { borderWidth: 2, borderColor: '#757083', }]} onPress={() => setColor('#090C08')} />
+              <TouchableOpacity  style={[styles.colorCircle, { backgroundColor: '#474056' }, color === '#474056' && { borderWidth: 2, borderColor: '#757083', }]} onPress={() => setColor('#474056')} />
+              <TouchableOpacity able style={[styles.colorCircle, { backgroundColor: '#8A95A5' }, color === '#8A95A5' && { borderWidth: 2, borderColor: '#757083', }]} onPress={() => setColor('#8A95A5')} />
+              <TouchableOpacity  style={[styles.colorCircle, { backgroundColor: '#B9C6AE' }, color === '#B9C6AE' && { borderWidth: 2, borderColor: '#757083', }]} onPress={() => setColor('#B9C6AE')} />
+            </View>
+            <TouchableOpacity sable style={styles.buttonText} onPress={() => navigation.navigate('chat', { name: name, color: color})}>
+              <Text style={styles.text}>Start Chatting</Text>
+            </TouchableOpacity>
           </View>
-          <Text style={styles.label}>Choose Background Color:</Text>
-          <View style={styles.colorOptions}>
-            <TouchableOpacity  style={[styles.colorCircle, { backgroundColor: '#090C08' }, color === '#090C08' && { borderWidth: 2, borderColor: '#757083', }]} onPress={() => setColor('#090C08')} />
-            <TouchableOpacity  style={[styles.colorCircle, { backgroundColor: '#474056' }, color === '#474056' && { borderWidth: 2, borderColor: '#757083', }]} onPress={() => setColor('#474056')} />
-            <TouchableOpacity able style={[styles.colorCircle, { backgroundColor: '#8A95A5' }, color === '#8A95A5' && { borderWidth: 2, borderColor: '#757083', }]} onPress={() => setColor('#8A95A5')} />
-            <TouchableOpacity  style={[styles.colorCircle, { backgroundColor: '#B9C6AE' }, color === '#B9C6AE' && { borderWidth: 2, borderColor: '#757083', }]} onPress={() => setColor('#B9C6AE')} />
-          </View>
-          <TouchableOpacity sable style={styles.buttonText} onPress={() => navigation.navigate('chat', { name: name})}>
-            <Text style={styles.text}>Start Chatting</Text>
-          </TouchableOpacity>
-        </View>
-      </ImageBackground>
-    </View>
+        </ImageBackground>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
