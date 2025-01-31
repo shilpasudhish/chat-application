@@ -1,31 +1,42 @@
-import { StyleSheet, View, Platform, KeyboardAvoidingView, Text } from 'react-native';
+import { StyleSheet, View, Platform, KeyboardAvoidingView } from 'react-native';
 import { useEffect, useState } from 'react';
 import { GiftedChat, Bubble } from "react-native-gifted-chat";
+import { query, orderBy, collection, onSnapshot, addDoc } from "firebase/firestore";
 
 
-const Chat = ({ route, navigation }) => {
-    const { name, color } = route.params;
+
+const Chat = ({ route, navigation, db, }) => {
+    const { name, color, uId } = route.params;
     const [messages, setMessages] = useState([]);
 
-    const onSend = (newMessages) => {
-      setMessages(previousMessages => GiftedChat.append(previousMessages, newMessages))
+    const onSend = async(newMessages) => {
+      setMessages(previousMessages => GiftedChat.append(previousMessages, newMessages));
+      let newMessage = {
+          ...newMessages[0],
+          createdTime: new Date()
+      }
+      await addDoc(collection(db, "messages"), newMessage);
     }
 
     useEffect(() => {
-      setMessages([
-        {
-          _id: 1,
-          text: 'You have joined the chatroom',
-          createdAt: new Date(),
-          system: true,
-        },
-      ]);
-    }, []);
-
-
-    useEffect(() => {
       navigation.setOptions({ title: name })
-    }, []);
+      var unsubscriber = null;
+      const collectionQuery = query(collection(db, "messages"), orderBy("createdTime", "desc"));
+      unsubscriber = onSnapshot(collectionQuery, (messages) => {
+        let newList = [];
+        messages.forEach(message => {
+            let newItem = {
+                ...message.data(),
+                createdAt: new Date(message.data().createdTime.seconds*1000)
+            };
+            newList.push(newItem);
+        })
+        setMessages(newList);
+      })
+      return () => {
+        if (unsubscriber) unsubscriber();
+      }
+    }, [`${messages}`]);
 
     const renderBubble = (props) => {
       return <Bubble
@@ -48,7 +59,7 @@ const Chat = ({ route, navigation }) => {
           renderBubble={renderBubble}
           onSend={messages => onSend(messages)}
           user={{
-            _id: 1,
+            _id: uId,
             name
           }}
         />
