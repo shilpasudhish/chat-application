@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ImageBackground, Image, StyleSheet, View, Text, TouchableOpacity , TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import { ImageBackground, Image, StyleSheet, View, Text, TouchableOpacity , TextInput, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import image from '../assets/Background Image.png';
 import { getAuth, signInAnonymously } from 'firebase/auth';
 
@@ -19,9 +19,10 @@ const Start = ({ navigation }) => {
   }
 
   return (
-    <KeyboardAvoidingView
+    <KeyboardAvoidingView 
       style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : ''}
+      behavior={Platform.OS === "ios" ? "padding" : 'height'}
+      keyboardVerticalOffset={Platform.OS === "ios" ? -40 : -80}
     >
       <View style={styles.main}>
         <ImageBackground source={image} style={styles.image}>
