@@ -3,33 +3,48 @@ import { useEffect, useState } from 'react';
 import { GiftedChat, Bubble, InputToolbar  } from "react-native-gifted-chat";
 import { query, orderBy, collection, onSnapshot, addDoc } from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import MapView from "react-native-maps";
+import CustomActions from "./CustomActions";
 
-const Chat = ({ route, navigation, db, isConnected }) => {
+const Chat = ({ route, navigation, db, isConnected, storage }) => {
     const { name, color, uId } = route.params;
     const [messages, setMessages] = useState([]);
 
-    const onSend = async(newMessages) => {
-      setMessages(previousMessages => GiftedChat.append(previousMessages, newMessages));
-      let newMessage = {
-          ...newMessages[0],
-          createdTime: new Date()
-      }
-      await addDoc(collection(db, "messages"), newMessage);
-    }
+    // function for sending messages
+    const onSend = (newMessages) => {
+      const [message] = newMessages;
+  
+      // adding message to firebase
+      addDoc(collection(db, "messages"), {
+        _id: message._id,
+        text: message.text || "",
+        createdTime: message.createdTime?.toDate() || new Date(),
+        user: message.user,
+        image: message.image || null,
+        location: message.location || null,
+      });
+  
+      // adding message to chat
+      setMessages((prev) => GiftedChat.append(prev, newMessages));
+    };
+
     let unsubscriber;
     useEffect(() => {
+      // checking if user is connected
       if(isConnected) {
+        // unsubscribe exisiting listener if any
         if (unsubscriber) unsubscriber();
 
         navigation.setOptions({ title: name })
         unsubscriber = null;
+        // listening to messages in realtime
         const collectionQuery = query(collection(db, "messages"), orderBy("createdTime", "desc"));
         unsubscriber = onSnapshot(collectionQuery, (messages) => {
           let newList = [];
           messages.forEach(message => {
               let newItem = {
                   ...message.data(),
-                  createdAt: new Date(message.data().createdTime.seconds*1000)
+                  createdTime: new Date(message.data().createdTime.seconds*1000)
               };
               newList.push(newItem);
           })
@@ -37,6 +52,7 @@ const Chat = ({ route, navigation, db, isConnected }) => {
           setMessages(newList);
         })
       }
+      // is user is not connected, load cached messages
       else {
         loadCachedMessages();
       }
@@ -59,11 +75,41 @@ const Chat = ({ route, navigation, db, isConnected }) => {
       />
     }
 
+    // function for rendering message input
     const renderInputToolbar = (props) => {
       if (isConnected) return <InputToolbar {...props} />;
       return null;
     }
 
+    //  function for rendering custom action for chat
+    const renderCustomActions = (props) => {
+      return <CustomActions storage={storage} userID={uId} onSend={(message) => onSend(message)} name = {name} {...props} />;
+    };
+
+    // function for rendering map 
+    const renderMapView = (props) => {
+      const { currentMessage } = props;
+      if (
+        currentMessage.location &&
+        currentMessage.location.latitude !== 0 &&
+        currentMessage.location.longitude !== 0
+      ) {
+        return (
+          <MapView
+            style={{ width: 150, height: 100, borderRadius: 15, margin: 4 }}
+            region={{
+              latitude: currentMessage.location.latitude,
+              longitude: currentMessage.location.longitude,
+              latitudeDelta: 0.0922,
+              longitudeDelta: 0.0421,
+            }}
+          />
+        );
+      }
+      return null;
+    };
+
+    // function for caching messages
     const cacheMessages = async (messagesToCache) => {
       try {
         await AsyncStorage.setItem('messages', JSON.stringify(messagesToCache));
@@ -71,6 +117,7 @@ const Chat = ({ route, navigation, db, isConnected }) => {
         console.log(error.message);
       }
     }
+    // function for loading cached messages
     const loadCachedMessages = async () => {
       const cachedMessages = await AsyncStorage.getItem("messages") || [];
       setMessages(JSON.parse(cachedMessages));
@@ -80,8 +127,15 @@ const Chat = ({ route, navigation, db, isConnected }) => {
       <View style={[styles.container, { backgroundColor: color }]}>
         <GiftedChat
           messages={messages}
+          placeholder={"Type to send message"}
           renderBubble={renderBubble}
           renderInputToolbar={renderInputToolbar}
+          accessible = {true}
+          accessibilityLabel="send"
+          accessibilityHint="Sends a message"
+          accessibilityRole="button"
+          renderActions={renderCustomActions}
+          renderCustomView={renderMapView}
           onSend={messages => onSend(messages)}
           user={{
             _id: uId,

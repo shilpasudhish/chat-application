@@ -3,17 +3,18 @@ import { ImageBackground, Image, StyleSheet, View, Text, TouchableOpacity , Text
 import image from '../assets/Background Image.png';
 import { getAuth, signInAnonymously } from 'firebase/auth';
 
-
 const Start = ({ navigation }) => {
   const [name, setName] = useState('');
   const [color, setColor] = useState('#090C08');
 
   const auth = getAuth();
   const signUserIn = () => {
+    // Signing in anonymously
       signInAnonymously(auth).then(res => {
           navigation.navigate("chat", {uId: res.user.uid, name: name, color: color});
           Alert.alert("Here we go!");
-      }).catch(err => {
+      }).catch(() => {
+        // Displaying error message if something unexpected happens
           Alert.alert("Sorry something unexpected happened.");
       })
   }
@@ -36,6 +37,9 @@ const Start = ({ navigation }) => {
               source={require('../assets/icon.svg')}
             />
               <TextInput
+                accessible={true}
+                accessibilityLabel="Enter username"
+                accessibilityRole="text"
                 style={styles.input}
                 placeholder="Your Name"
                 value={name}
@@ -50,7 +54,7 @@ const Start = ({ navigation }) => {
               <TouchableOpacity able style={[styles.colorCircle, { backgroundColor: '#8A95A5' }, color === '#8A95A5' && { borderWidth: 2, borderColor: '#757083', }]} onPress={() => setColor('#8A95A5')} />
               <TouchableOpacity  style={[styles.colorCircle, { backgroundColor: '#B9C6AE' }, color === '#B9C6AE' && { borderWidth: 2, borderColor: '#757083', }]} onPress={() => setColor('#B9C6AE')} />
             </View>
-            <TouchableOpacity sable style={styles.buttonText} onPress={() => {
+            <TouchableOpacity sable style={styles.buttonText} accessible accessibilityLabel="Start Chatting" accessibilityRole="button" onPress={() => {
                         if (name == '') {
                             Alert.alert('Username is required to proceed further.');
                         } else {
